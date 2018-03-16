@@ -18,10 +18,6 @@ const sql = mysql.createConnection({
 sql.connect((err) => {
     if (err) throw err;
     console.log("Connected!");
-    sql.query("CREATE DATABASE ReSlackd", (err, result) => {
-        if (err) throw err;
-        console.log("Database created")
-    })
 });
 
 app.use(passport.initialize());
