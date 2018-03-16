@@ -1,7 +1,30 @@
 const express = require('express');
+const passport = require('passport');
 const socket = require('socket.io');
+const mysql = require('mysql');
+require('./services/passport');
 
 const app = express();
+
+require('./routes/authRoutes')(app);
+
+const sql = mysql.createConnection({
+    host: "localhost",
+    user: "lapeterson01",
+    password: "Sargent01"
+});
+
+sql.connect((err) => {
+    if (err) throw err;
+    console.log("Connected!");
+    sql.query("CREATE DATABASE ReSlackd", (err, result) => {
+        if (err) throw err;
+        console.log("Database created")
+    })
+});
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
