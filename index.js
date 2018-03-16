@@ -3,6 +3,7 @@ const passport = require('passport');
 const socket = require('socket.io');
 const mysql = require('mysql');
 require('./services/passport');
+require('./sql/sql-credentials');
 
 const app = express();
 
@@ -10,8 +11,8 @@ require('./routes/authRoutes')(app);
 
 const sql = mysql.createConnection({
     host: "localhost",
-    user: "lapeterson01",
-    password: "Sargent01"
+    user: username,
+    password: password
 });
 
 sql.connect((err) => {
