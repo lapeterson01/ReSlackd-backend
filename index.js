@@ -3,11 +3,20 @@ const passport = require('passport');
 const socket = require('socket.io');
 const mysql = require('mysql');
 const credentials = require('./sql/sql-credentials');
+// require('./models/User')
 require('./services/passport');
 
 const app = express();
 
 require('./routes/authRoutes')(app);
+
+const pool = mysql.createPool({
+    connectionLimit : 10,
+    host            : 'localhost',
+    user            : credentials.username,
+    password        : credentials.password,
+    database        : 'reslackd'
+})
 
 const sql = mysql.createConnection({
     host: "localhost",
@@ -15,10 +24,10 @@ const sql = mysql.createConnection({
     password: credentials.password
 });
 
-sql.connect((err) => {
+pool.query(`INSERT INTO users (name, googleID, createdAt, lastActiveAt, lastLoginAt) VALUES (Logan, 123456, 2011-01-22, 2011-01-22, 2011-01-22)`, (err) => {
     if (err) throw err;
-    console.log("Connected!");
-});
+    console.log("values added");
+})
 
 app.use(passport.initialize());
 app.use(passport.session());
