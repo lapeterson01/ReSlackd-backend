@@ -1,13 +1,5 @@
 const requireLogin = require('../middlewares/requireLogin');
-const mysql = require('mysql');
-
-var pool  = mysql.createPool({
-  connectionLimit : 10,
-  host            : 'localhost',
-  user            : 'username',
-  password        : 'password',
-  database        : 'reslackd'
-});
+const pool = require('../db/pool');
 
 module.exports = app => {
   app.get('/api/channels', requireLogin, async (req, res) => {
