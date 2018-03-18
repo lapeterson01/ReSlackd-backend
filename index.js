@@ -19,8 +19,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 require('./routes/authRoutes')(app);
-require('./routes/getRoutes');
-require('./routes/postRoutes');
+require('./routes/getRoutes')(app);
+require('./routes/postRoutes')(app);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
