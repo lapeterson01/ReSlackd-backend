@@ -13,9 +13,6 @@ module.exports = app => {
     const message = [{username, userId, text, timestamp, image}]
   });
 
-  app.post('/api/channels', requireLogin, async (req, res) => {
-    console.log('post message in channel');
-  });
 
   app.get('/api/users', requireLogin, async (req, res) => {
     if (!req.user) return res.status(401).end()
@@ -30,24 +27,9 @@ module.exports = app => {
 
   });
 
-  app.put('/api/user/channels', requireLogin, async (req, res) => {
-    console.log('allow the logged in user to leave a channel');
-
-  });
-
-  app.post('/api/user/channels/add', requireLogin, async (req, res) => {
-    console.log('add user to channel');
-
-  });
-
   app.get('/api/current_user', requireLogin, async (req, res) => {
     if (!req.user) return res.status(401).end()
     console.log('gives user details for logged in user');
-
-  });
-
-  app.post('/api/channels/add', requireLogin, async (req, res) => {
-    console.log('Add a new channel');
 
   });
 
