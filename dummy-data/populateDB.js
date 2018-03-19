@@ -7,8 +7,10 @@ const populateUsersDB = () => {
   fs.readFile('./dummy-data/usersData.json', 'utf8', (err, usersData) => {
     if (err) throw err;
     let users = JSON.parse(usersData);
+    //faker's image is super slow! add faster image instead.
+    let fasterImageURL = 'https://vignette.wikia.nocookie.net/detectiveconan96/images/7/72/Generic_Male_Profile.jpg/revision/latest';
     users.forEach((currentUser) => {
-      let userValues = [currentUser.name, currentUser.imageURL, currentUser.googleID, currentUser.createdAt, currentUser.lastActiveAt, currentUser.lastLoginAt];
+      let userValues = [currentUser.name, fasterImageURL, currentUser.googleID, currentUser.createdAt, currentUser.lastActiveAt, currentUser.lastLoginAt];
 
       pool.query('INSERT INTO users (name, imageURL, googleID, createdAt, lastActiveAt, lastLoginAt) VALUES (?, ?, ?, ?, ?, ?)', userValues, (err, res) => {
         if (err) throw err;
@@ -27,10 +29,11 @@ const populateChannelsDB = () => {
 
   for (let i = 0; i < 30; i++){
     let name = faker.company.bsNoun();
+    let purpose = faker.company.catchPhrase();
     let createdAt = moment(faker.date.past()).valueOf();
     let type = 'channel';
-    let channelValues = [name, createdAt, type];
-    pool.query('INSERT INTO channels (name, createdAt, type) VALUES (?, ?, ?)', channelValues, (err, results) => { 
+    let channelValues = [name, purpose, createdAt, type];
+    pool.query('INSERT INTO channels (name, purpose, createdAt, type) VALUES (?, ?, ?, ?)', channelValues, (err, results) => { 
       if (err) throw err;
     });
   }
@@ -40,11 +43,11 @@ const populateChannelsDB = () => {
 
 //Add DM channels to channels DB. Same as regular channels but no name attribute and type = dm.
 const addDMChannels = () => {
-  for (let i = 0; i < 12; i++){
+  for (let i = 0; i < 50; i++){
     let createdAt = moment(faker.date.past()).valueOf();
     let type = 'dm';
-    let dmValues = [null, createdAt, type]
-    pool.query('INSERT INTO channels (name, createdAt, type) VALUES (?, ?, ?)', dmValues, (err, results) => { 
+    let dmValues = [null, null, createdAt, type]
+    pool.query('INSERT INTO channels (name, purpose, createdAt, type) VALUES (?, ?, ?, ?)', dmValues, (err, results) => { 
       if (err) throw err;
     });
   }
