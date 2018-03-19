@@ -27,12 +27,37 @@ module.exports = app => {
   });
 
   app.post('/api/user/channels/add', requireLogin, async (req, res) => {
+    // pool.query('INSERT INTO users2channels (uID, cID, joinedAt, active) VALUES (?, ?, ?, ?)')
     console.log('add user to channel');
 
   });
 
-  app.post('/api/channels/add', requireLogin, async (req, res) => {
-    console.log('Add a new channel');
+  app.post('/api/channels', requireLogin, async (req, res) => {
+    const channel = {
+      name: req.body.name,
+      purpose: req.body.purpose,
+      createdAt: req.user.createdAt,
+      type: req.body.type,
+      cID: "",
+      uID: req.body.users,
+      joinedAt: req.user.createdAt,
+      active: true
+    }
+    channel.uID.push(req.user.uID);
+    let messageValues = [channel.name, channel.purpose, channel.createdAt, channel.type];
+    pool.query('INSERT INTO channels (name, purpose, createdAt, type) VALUES (?, ?, ?, ?)', messageValues, (err, results, fields) => {
+      if (err) throw err;
+      channel.cID = results.insertId.toString();
+      for (let i = 0; i < channel.uID.length; i++) {
+        let u2cMessageValues = [channel.uID[i], channel.cID, channel.joinedAt, channel.active];
+        pool.query('INSERT INTO users2channels (uID, cID, joinedAt, active) VALUES (?, ?, ?, ?)', u2cMessageValues, (err, results, fields) => {
+          if (err) throw err;
+        })
+      }
+      res.send(channel);
+    })
+    
+    // console.log('Add a new channel');
 
   });
 
