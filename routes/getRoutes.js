@@ -2,13 +2,53 @@ const requireLogin = require('../middlewares/requireLogin');
 const pool = require('../db/pool');
 
 module.exports = app => {
-  app.get('/api/channels', requireLogin, async (req, res) => {
-    //provide list of channels
-    //allow a search in querystring
+  app.get('/api/channels', requireLogin, (req, res) => {
+    //provide list of channels for logged in user
     let uID = req.user.uID;
 
-    pool.query('SELECT name FROM channels')
-    console.log('channels response')
+    //parse query string for search params. convert both search and name-to-be-searched to lowercase.
+    let search = '';
+    if (req.query.search) search = req.query.search.toLowerCase();
+  
+    //perform different queries for channels and dms. channels query returns channel name. 
+  
+    let channelsQuery = `SELECT channels.name, channels.type FROM channels JOIN users2channels ON users2channels.cID = channels.cID JOIN users ON users2channels.uID = users.uID WHERE users.uID = ${uID} AND channels.type = 'channel'`;
+
+    //no need to use node mysql's escape method for search params as they will be parsed as strings.
+
+    if (search) channelsQuery += ` AND LOWER(channels.name) LIKE '%${search}%'`
+
+    let dmsQuery =`SELECT users.name, channels.type FROM channels JOIN users2channels ON users2channels.cID = channels.cID JOIN users ON users2channels.uID = users.uID 
+    WHERE channels.cID IN (SELECT channels.cID FROM channels JOIN users2channels ON users2channels.cID = channels.cID JOIN users ON users2channels.uID = users.uID WHERE users.uID = ${uID} AND channels.type = 'dm') AND users.uID <> ${uID}`;
+
+    if (search) dmsQuery += ` AND LOWER(users.name) LIKE '%${search}%'`
+
+    let bothQuery = `${channelsQuery} UNION ${dmsQuery}`;
+
+    let finalQuery = '';
+
+    switch (req.query.type) {
+      case undefined: {
+        finalQuery = bothQuery;
+        break;
+      }
+      case 'channel': {
+        finalQuery = channelsQuery;
+        break;
+      }
+      case 'dm': {
+        finalQuery = dmsQuery;
+        break;
+      }
+      default: {
+        return res.send(400, "If a type parameter is provided, its value must be 'channel' or 'dm'.");
+      }
+    };
+
+    pool.query(finalQuery, (err, results, fields) => {
+      if (err) throw err;
+      res.send(results);
+    })
   });
 
   app.get('/api/channels/:channelId', requireLogin, async (req, res) => {
@@ -20,9 +60,9 @@ module.exports = app => {
     //Multiply page offset by 20 because 20 results per page.
     let offset = req.query.page ? (parseInt(req.query.page) - 1) * 20 : 0;
 
-    let sqlQuery = 'SELECT users.name, users.uID, messages.text, messages.createdAt as timestamp, users.imageURL FROM messages join users on messages.uID = users.uID join channels on channels.cID = messages.cID WHERE channels.cID = ? ORDER BY messages.createdAt DESC  LIMIT 20 OFFSET ?';
+    let messagesQuery = 'SELECT users.name, users.uID, messages.text, messages.createdAt as timestamp, users.imageURL FROM messages join users on messages.uID = users.uID join channels on channels.cID = messages.cID WHERE channels.cID = ? ORDER BY messages.createdAt DESC  LIMIT 20 OFFSET ?';
 
-    pool.query(sqlQuery, [channelId, offset], (err, results, fields) => {
+    pool.query(messagesQuery, [channelId, offset], (err, results, fields) => {
       if (err) throw err;
       res.send(results); 
     })
@@ -31,9 +71,8 @@ module.exports = app => {
   });
 
 
-  app.get('/api/users', requireLogin, async (req, res) => {
-    if (!req.user) return res.status(401).end()
-
+  app.get('/api/users', requireLogin, (req, res) => {
+    let userQuery = ''
     console.log('Search for users');
     
   });
