@@ -8,7 +8,11 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser((id, done) => {
-    done(null, id);
+    sql.query('SELECT * FROM users WHERE googleID = ?', [id], (err, user, fields) => {
+        if (err) throw err;
+        done(null, user[0])
+    })
+    // done(null, id);
 })
 
 passport.use(
