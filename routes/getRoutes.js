@@ -12,10 +12,22 @@ module.exports = app => {
   });
 
   app.get('/api/channels/:channelId', requireLogin, async (req, res) => {
-    console.log('show all messages in channel (can be channel or dm)')
-    // show 20 by default. allow requests for previous pages
 
-    const message = [{name, userId, text, timestamp, image}]
+    // show 20 by default. allow requests for previous pages
+    let channelId = req.params.channelId;
+
+    //If there is a page in the request, subtract 1 (page 1 is offset by 0 pages, and so on).
+    //Multiply page offset by 20 because 20 results per page.
+    let offset = req.query.page ? (parseInt(req.query.page) - 1) * 20 : 0;
+
+    let sqlQuery = 'SELECT users.name, users.uID, messages.text, messages.createdAt as timestamp, users.imageURL FROM messages join users on messages.uID = users.uID join channels on channels.cID = messages.cID WHERE channels.cID = ? ORDER BY messages.createdAt DESC  LIMIT 20 OFFSET ?';
+
+    pool.query(sqlQuery, [channelId, offset], (err, results, fields) => {
+      if (err) throw err;
+      res.send(results); 
+    })
+
+    
   });
 
 
