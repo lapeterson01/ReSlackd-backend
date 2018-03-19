@@ -2,23 +2,22 @@ const requireLogin = require('../middlewares/requireLogin');
 const pool = require('../db/pool');
 
 module.exports = app => {
-  app.get('/api/channels', requireLogin, (req, res) => {
+  app.get('/api/user/channels', requireLogin, (req, res) => {
     //provide list of channels for logged in user
     let uID = req.user.uID;
-
     //parse query string for search params. convert both search and name-to-be-searched to lowercase.
     let search = '';
     if (req.query.search) search = req.query.search.toLowerCase();
   
     //perform different queries for channels and dms. channels query returns channel name. 
   
-    let channelsQuery = `SELECT channels.name, channels.type FROM channels JOIN users2channels ON users2channels.cID = channels.cID JOIN users ON users2channels.uID = users.uID WHERE users.uID = ${uID} AND channels.type = 'channel'`;
+    let channelsQuery = `SELECT channels.cID, channels.name, channels.type FROM channels JOIN users2channels ON users2channels.cID = channels.cID JOIN users ON users2channels.uID = users.uID WHERE users.uID = ${uID} AND channels.type = 'channel'`;
 
     //no need to use node mysql's escape method for search params as they will be parsed as strings.
 
     if (search) channelsQuery += ` AND LOWER(channels.name) LIKE '%${search}%'`
 
-    let dmsQuery =`SELECT users.name, channels.type FROM channels JOIN users2channels ON users2channels.cID = channels.cID JOIN users ON users2channels.uID = users.uID 
+    let dmsQuery =`SELECT channels.cID, users.name, channels.type FROM channels JOIN users2channels ON users2channels.cID = channels.cID JOIN users ON users2channels.uID = users.uID 
     WHERE channels.cID IN (SELECT channels.cID FROM channels JOIN users2channels ON users2channels.cID = channels.cID JOIN users ON users2channels.uID = users.uID WHERE users.uID = ${uID} AND channels.type = 'dm') AND users.uID <> ${uID}`;
 
     if (search) dmsQuery += ` AND LOWER(users.name) LIKE '%${search}%'`
@@ -72,21 +71,35 @@ module.exports = app => {
 
 
   app.get('/api/users', requireLogin, (req, res) => {
-    let userQuery = ''
-    console.log('Search for users');
+    let userQuery = 'SELECT * from users';
+    let search = '';
+    if (req.query.search) search = req.query.search.toLowerCase();
+    if (search) userQuery += ` WHERE LOWER(name) LIKE '%${search}%'`;
+    pool.query(userQuery, (err, results, fields) => {
+      if (err) throw err;
+      res.send(results);
+    })
     
   });
   
-  app.get('/api/user/channels', requireLogin, async (req, res) => {
+  app.get('/api/channels', requireLogin, (req, res) => {
+    let channelsQuery = `SELECT * from channels WHERE type = 'channel'`;
     
-    console.log('Search for users');
+    pool.query(channelsQuery, (err, results, fields) => {
+      if (err) throw err;
+      res.send(results);
+    })
 
-  });
+  })
 
-  app.get('/api/current_user', requireLogin, async (req, res) => {
-    
-    console.log('gives user details for logged in user');
 
+  app.get('/api/current-user', requireLogin, (req, res) => {
+    let uID = req.user.uID;
+    let currentUserQuery = `SELECT * FROM users WHERE uID = ${uID}`;
+    pool.query(currentUserQuery, (err, results, fields) => {
+      if (err) throw err;
+      res.json(results);
+    })
   });
 
 
