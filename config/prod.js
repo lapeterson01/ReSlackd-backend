@@ -1,6 +1,6 @@
 module.exports = {
-  googleClientID: '196533501919-fmhqhnpha483lsmcqesctkk301oiohc0.apps.googleusercontent.com',
-  googleClientSecret: 'BD0X5hLyp8exlCGv8X-WfwEa',
-  cookieKey: 'teewt',
-  pool: require('../db/pool-heroku');
-}
+  googleClientID: GOOGLE_CLIENT_ID,
+  googleClientSecret: GOOGLE_CLIENT_SECRET,
+  cookieKey: COOKIE_KEY,
+  pool: require('../db/pool-heroku')
+}s
