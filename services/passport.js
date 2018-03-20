@@ -24,10 +24,13 @@ passport.use(
         (accessToken, refreshToken, profile, done) => {
             sql.query('SELECT * FROM users WHERE googleID = ?', [profile.id], (err, existingUser, fields) => {
                 if (err) throw err;
+                const time = new Date();
                 if (existingUser.length > 0) {
-                    done(null, profile);
+                    sql.query('UPDATE users SET lastLoginAt = ? WHERE uID = ?', [time.getTime(), existingUser[0].uID], (err, results, fields) => {
+                        if (err) throw err;
+                        done(null, profile);
+                    })
                 } else {
-                    let time = new Date();
                     sql.query('INSERT INTO users (name, imageURL, googleID, createdAt, lastActiveAt, lastLoginAt) VALUES (?, ?, ?, ?, ?, ?)', [profile.displayName, profile.photos[0].value, profile.id, time.getTime(), time.getTime(), time.getTime()], (err, result) => {
                         if (err) throw err;
                         done(null, profile)
