@@ -1,10 +1,11 @@
 //also includes our one PUT route!
 
 const requireLogin = require('../middlewares/requireLogin');
-const pool = require('../db/pool');
+const pool = require('../config/keys');
 
 module.exports = app => {
 
+// Add a message to a channel
   app.post('/api/channels/:channelId', requireLogin, async (req, res) => {
     const currentTime = new Date();
     const post = {
@@ -21,6 +22,7 @@ module.exports = app => {
     });
   });
 
+// Remove currently logged in user(s) from a channel
   app.put('/api/user/channels', requireLogin, async (req, res) => {
     const currentTime = new Date();
     const user = {
@@ -36,6 +38,7 @@ module.exports = app => {
     })
   });
 
+// Add user(s) to a channel
   app.post('/api/user/channels/add', requireLogin, async (req, res) => {
     const currentTime = new Date();
     const user = {
@@ -51,10 +54,9 @@ module.exports = app => {
       })
     }
     res.send(user);
-    console.log('add user to channel');
-
   });
 
+// Create channel or DM
   app.post('/api/channels', requireLogin, async (req, res) => {
     const currentTime = new Date();
     const channel = {
@@ -67,6 +69,10 @@ module.exports = app => {
       joinedAt: currentTime.getTime(),
       active: true
     }
+    if (!Array.isArray(channel.uID) || channel.uID.length == 0) {
+      res.status(400).send('You must select a user.');
+      return;
+    }
     channel.uID.push(req.user.uID);
     if (channel.type == 'DM') {
       if (channel.uID.length != 2) {
@@ -75,6 +81,14 @@ module.exports = app => {
       }
       channel.name = null;
       channel.purpose = null;
+    } else if (channel.type == 'channel') {
+      if (channel.name == null) {
+        res.status(400).send('Channel name required')
+        return;
+      }
+    } else {
+      res.status(400).send('Type must be either DM or channel');
+      return;
     }
     let messageValues = [channel.name, channel.purpose, channel.createdAt, channel.type];
     pool.query('INSERT INTO channels (name, purpose, createdAt, type) VALUES (?, ?, ?, ?)', messageValues, (err, results, fields) => {
@@ -89,6 +103,4 @@ module.exports = app => {
       res.send(channel);
     })
   });
-
-
 };
