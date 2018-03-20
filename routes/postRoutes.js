@@ -28,7 +28,20 @@ module.exports = app => {
   });
 
   app.post('/api/user/channels/add', requireLogin, async (req, res) => {
-    // pool.query('INSERT INTO users2channels (uID, cID, joinedAt, active) VALUES (?, ?, ?, ?)')
+    const currentTime = new Date();
+    const user = {
+      uID: req.body.users,
+      cID: req.body.channel,
+      joinedAt: currentTime.getTime(),
+      active: true
+    }
+    for (let i = 0; i < user.uID.length; i++) {
+      const messageValues = [user.uID[i], user.cID, user.joinedAt, user.active];
+      pool.query('INSERT INTO users2channels (uID, cID, joinedAt, active) VALUES (?, ?, ?, ?)', messageValues, (err, results, fields) => {
+        if (err) throw err;
+      })
+    }
+    res.send(user);
     console.log('add user to channel');
 
   });
