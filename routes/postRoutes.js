@@ -1,7 +1,8 @@
 //also includes our one PUT route!
 
 const requireLogin = require('../middlewares/requireLogin');
-const pool = require('../config/keys');
+const keys = require('../config/keys');
+const pool = keys.pool;
 
 module.exports = app => {
 
