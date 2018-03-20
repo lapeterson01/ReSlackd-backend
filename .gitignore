@@ -60,5 +60,8 @@ typings/
 # next.js build output
 .next
 
-/sql
+db/pool.js
+config/dev.js
+sql
+
 .vscode
