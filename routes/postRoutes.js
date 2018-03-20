@@ -1,7 +1,7 @@
 //also includes our one PUT route!
 
 const requireLogin = require('../middlewares/requireLogin');
-const pool = require('../config/keys');
+const pool = require('../config/dev').pool;
 
 module.exports = app => {
 
@@ -94,13 +94,13 @@ module.exports = app => {
     pool.query('INSERT INTO channels (name, purpose, createdAt, type) VALUES (?, ?, ?, ?)', messageValues, (err, results, fields) => {
       if (err) throw err;
       channel.cID = results.insertId.toString();
-      for (let i = 0; i < channel.uID.length; i++) {
-        let u2cMessageValues = [channel.uID[i], channel.cID, channel.joinedAt, channel.active];
+      channel.uID.forEach((user) => {
+        let u2cMessageValues = [user, channel.cID, channel.joinedAt, channel.active];
         pool.query('INSERT INTO users2channels (uID, cID, joinedAt, active) VALUES (?, ?, ?, ?)', u2cMessageValues, (err, results, fields) => {
           if (err) throw err;
         })
-      }
+      })
       res.send(channel);
-    })
+    })  
   });
 };
