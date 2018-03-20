@@ -22,9 +22,18 @@ module.exports = app => {
   });
 
   app.put('/api/user/channels', requireLogin, async (req, res) => {
-    console.log('allow the logged in user to leave a channel');
-    console.log(req);
-    console.log(res);
+    const currentTime = new Date();
+    const user = {
+      uID: req.user.uID,
+      cID: req.body.channel,
+      joinedAt: currentTime.getTime(),
+      active: true
+    }
+    const messageValues = [user.uID, user.cID];
+    pool.query('DELETE FROM users2channels WHERE uID = ? AND cID = ?', messageValues, (err, results, fields) => {
+      if (err) throw err;
+      res.send(user);
+    })
   });
 
   app.post('/api/user/channels/add', requireLogin, async (req, res) => {
