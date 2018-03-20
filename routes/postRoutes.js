@@ -6,11 +6,12 @@ const pool = require('../db/pool');
 module.exports = app => {
 
   app.post('/api/channels/:channelId', requireLogin, async (req, res) => {
+    const currentTime = new Date();
     const post = {
       cID: req.params.channelId,
       uID: req.user.uID,
       text: req.body.text,
-      createdAt: req.user.createdAt,
+      createdAt: currentTime.getTime(),
       enabled: true
     }
     let messageValues = [post.text, post.createdAt, post.uID, post.cID, post.enabled];
@@ -33,14 +34,15 @@ module.exports = app => {
   });
 
   app.post('/api/channels', requireLogin, async (req, res) => {
+    const currentTime = new Date();
     const channel = {
       name: req.body.name,
       purpose: req.body.purpose,
-      createdAt: req.user.createdAt,
+      createdAt: currentTime.getTime(),
       type: req.body.type,
       cID: "",
       uID: req.body.users,
-      joinedAt: req.user.createdAt,
+      joinedAt: currentTime.getTime(),
       active: true
     }
     channel.uID.push(req.user.uID);
@@ -56,8 +58,6 @@ module.exports = app => {
       }
       res.send(channel);
     })
-    
-    // console.log('Add a new channel');
 
   });
 
