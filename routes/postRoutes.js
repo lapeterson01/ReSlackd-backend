@@ -68,6 +68,14 @@ module.exports = app => {
       active: true
     }
     channel.uID.push(req.user.uID);
+    if (channel.type == 'DM') {
+      if (channel.uID.length != 2) {
+        res.status(400).send('You can only select 1 user for DMs.')
+        return;
+      }
+      channel.name = null;
+      channel.purpose = null;
+    }
     let messageValues = [channel.name, channel.purpose, channel.createdAt, channel.type];
     pool.query('INSERT INTO channels (name, purpose, createdAt, type) VALUES (?, ?, ?, ?)', messageValues, (err, results, fields) => {
       if (err) throw err;
@@ -80,7 +88,6 @@ module.exports = app => {
       }
       res.send(channel);
     })
-
   });
 
 
