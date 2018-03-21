@@ -107,12 +107,11 @@ module.exports = app => {
       return;
     }
     channel.uID.push(req.user.uID);
-    if (channel.type == 'DM') {
+    if (channel.type == 'DM' || channel.type == 'dm') {
       if (channel.uID.length != 2) {
         res.status(400).send('You can only select 1 user for DMs.')
         return;
       }
-      channel.name = null;
       channel.purpose = null;
     } else if (channel.type == 'channel') {
       if (channel.name == null) {
@@ -123,17 +122,24 @@ module.exports = app => {
       res.status(400).send('Type must be either DM or channel');
       return;
     }
-    let messageValues = [channel.name, channel.purpose, channel.createdAt, channel.type];
-    pool.query('INSERT INTO channels (name, purpose, createdAt, type) VALUES (?, ?, ?, ?)', messageValues, (err, results, fields) => {
+    pool.query('SELECT * FROM channels WHERE name = ?', [channel.name], (err, existingChannel, fields) => {
       if (err) throw err;
-      channel.cID = results.insertId.toString();
-      channel.uID.forEach((user) => {
-        let u2cMessageValues = [user, channel.cID, channel.joinedAt, channel.active];
-        pool.query('INSERT INTO users2channels (uID, cID, joinedAt, active) VALUES (?, ?, ?, ?)', u2cMessageValues, (err, results, fields) => {
-          if (err) throw err;
+      if (existingChannel.length > 0) {
+        res.status(400).send(`Duplicate ${channel.type}`);
+        return;
+      }
+      let messageValues = [channel.name, channel.purpose, channel.createdAt, channel.type];
+      pool.query('INSERT INTO channels (name, purpose, createdAt, type) VALUES (?, ?, ?, ?)', messageValues, (err, results, fields) => {
+        if (err) throw err;
+        channel.cID = results.insertId.toString();
+        channel.uID.forEach((user) => {
+          let u2cMessageValues = [user, channel.cID, channel.joinedAt, channel.active];
+          pool.query('INSERT INTO users2channels (uID, cID, joinedAt, active) VALUES (?, ?, ?, ?)', u2cMessageValues, (err, results, fields) => {
+            if (err) throw err;
+          })
         })
-      })
-      res.send(channel);
-    })  
+        res.send(channel);
+      })  
+    })
   });
 };
