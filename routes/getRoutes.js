@@ -1,6 +1,5 @@
 const requireLogin = require('../middlewares/requireLogin');
-const keys = require('../config/keys');
-const pool = keys.pool;
+const pool = require('../db/pool');
 
 module.exports = app => {
   app.get('/api/user/channels', requireLogin, (req, res) => {

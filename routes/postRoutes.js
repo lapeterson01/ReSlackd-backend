@@ -1,13 +1,16 @@
 //also includes our one PUT route!
 
 const requireLogin = require('../middlewares/requireLogin');
-const keys = require('../config/keys');
-const pool = keys.pool;
+const pool = require('../config/dev').pool;
 
 module.exports = app => {
 
 // Add a message to a channel
   app.post('/api/channels/:channelId', requireLogin, async (req, res) => {
+    if (req.body.text == '' || !req.body.text) {
+      res.status(400).send('You must fill out message field');
+      return;
+    }
     const currentTime = new Date();
     const post = {
       cID: req.params.channelId,
@@ -23,8 +26,12 @@ module.exports = app => {
     });
   });
 
-// Remove currently logged in user(s) from a channel
+// Remove currently logged in user from a channel
   app.put('/api/user/channels', requireLogin, async (req, res) => {
+    if (req.body.channel == "" || !req.body.channel) {
+      res.status(400).send('You must select a channel.');
+      return;
+    }
     const currentTime = new Date();
     const user = {
       uID: req.user.uID,
@@ -33,14 +40,30 @@ module.exports = app => {
       active: true
     }
     const messageValues = [user.uID, user.cID];
-    pool.query('DELETE FROM users2channels WHERE uID = ? AND cID = ?', messageValues, (err, results, fields) => {
+    pool.query('SELECT * FROM users2channels WHERE uID = ? AND cID = ?', messageValues, (err, existingUser, fields) => {
       if (err) throw err;
-      res.send(user);
+      if (existingUser.length == 0) {
+        res.status(404).send('You are not currently a member of selected channel.');
+        return;
+      } else {
+        pool.query('DELETE FROM users2channels WHERE uID = ? AND cID = ?', messageValues, (err, results, fields) => {
+          if (err) throw err;
+          res.send(user);
+        })
+      }
     })
   });
 
 // Add user(s) to a channel
   app.post('/api/user/channels/add', requireLogin, async (req, res) => {
+    if (req.body.users == "" || !req.body.users || req.body.length == 0) {
+      res.status(400).send('You must select users to add to channel.')
+      return;
+    }
+    if (req.body.channel == "" || !req.body.channel) {
+      res.status(400).send('You must select a channel.')
+      return;
+    }
     const currentTime = new Date();
     const user = {
       uID: req.body.users,
@@ -59,6 +82,15 @@ module.exports = app => {
 
 // Create channel or DM
   app.post('/api/channels', requireLogin, async (req, res) => {
+    if (req.body.name.length > 45) {
+      res.status(400).send('Channel name cannot exceed 45 characters.');
+      return;
+    }
+    if (req.body.purpose.length > 255) {
+      res.status(400).send('Channel purpose cannot exceed 255 characters.');
+      return;
+    }
+
     const currentTime = new Date();
     const channel = {
       name: req.body.name,
@@ -95,13 +127,13 @@ module.exports = app => {
     pool.query('INSERT INTO channels (name, purpose, createdAt, type) VALUES (?, ?, ?, ?)', messageValues, (err, results, fields) => {
       if (err) throw err;
       channel.cID = results.insertId.toString();
-      for (let i = 0; i < channel.uID.length; i++) {
-        let u2cMessageValues = [channel.uID[i], channel.cID, channel.joinedAt, channel.active];
+      channel.uID.forEach((user) => {
+        let u2cMessageValues = [user, channel.cID, channel.joinedAt, channel.active];
         pool.query('INSERT INTO users2channels (uID, cID, joinedAt, active) VALUES (?, ?, ?, ?)', u2cMessageValues, (err, results, fields) => {
           if (err) throw err;
         })
-      }
+      })
       res.send(channel);
-    })
+    })  
   });
 };
