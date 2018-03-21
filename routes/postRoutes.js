@@ -7,7 +7,7 @@ module.exports = app => {
 
 // Add a message to a channel
   app.post('/api/channels/:channelId', requireLogin, async (req, res) => {
-    if (req.body.text == '') {
+    if (req.body.text == '' || !req.body.text) {
       res.status(400).send('You must fill out message field');
       return;
     }
@@ -56,6 +56,14 @@ module.exports = app => {
 
 // Add user(s) to a channel
   app.post('/api/user/channels/add', requireLogin, async (req, res) => {
+    if (req.body.users == "" || !req.body.users || req.body.length == 0) {
+      res.status(400).send('You must select users to add to channel.')
+      return;
+    }
+    if (req.body.channel == "" || !req.body.channel) {
+      res.status(400).send('You must select a channel.')
+      return;
+    }
     const currentTime = new Date();
     const user = {
       uID: req.body.users,
@@ -74,6 +82,15 @@ module.exports = app => {
 
 // Create channel or DM
   app.post('/api/channels', requireLogin, async (req, res) => {
+    if (req.body.name.length > 45) {
+      res.status(400).send('Channel name cannot exceed 45 characters.');
+      return;
+    }
+    if (req.body.purpose.length > 255) {
+      res.status(400).send('Channel purpose cannot exceed 255 characters.');
+      return;
+    }
+
     const currentTime = new Date();
     const channel = {
       name: req.body.name,
