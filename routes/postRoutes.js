@@ -56,7 +56,7 @@ module.exports = app => {
 
 // Add user(s) to a channel
   app.post('/api/user/channels/add', requireLogin, async (req, res) => {
-    if (req.body.users == "" || !req.body.users || req.body.length == 0) {
+    if (req.body.users == "" || !req.body.users || req.body.users.length == 0) {
       res.status(400).send('You must select users to add to channel.')
       return;
     }
@@ -96,22 +96,6 @@ module.exports = app => {
         })
       }
     })
-    // for (let i = 0; i < user.uID.length; i++) {
-    //   pool.query('SELECT * FROM users2channels WHERE uID = ? AND cID = ?', [user.uID[i], user.cID], (err, existingUser, fields) => {
-    //     if (err) throw err;
-    //     if (existingUser.length > 0) {
-    //       res.status(400).send('User is already in channel.');
-    //       return;
-    //     } else {
-    //       userAdded = true;
-    //       const messageValues = [user.uID[i], user.cID, user.joinedAt, user.active];
-    //       pool.query('INSERT INTO users2channels (uID, cID, joinedAt, active) VALUES (?, ?, ?, ?)', messageValues, (err, results, fields) => {
-    //         if (err) throw err;
-    //       })
-    //     }
-    //   })
-    // }
-    // res.send(user);
   });
 
 // Create channel or DM
@@ -141,13 +125,13 @@ module.exports = app => {
       return;
     }
     channel.uID.push(req.user.uID);
-    if (channel.type == 'DM' || channel.type == 'dm') {
+    if (channel.type.toUpperCase() == 'DM') {
       if (channel.uID.length != 2) {
         res.status(400).send('You can only select 1 user for DMs.')
         return;
       }
       channel.purpose = null;
-    } else if (channel.type == 'channel') {
+    } else if (channel.type.toUpperCase() == 'CHANNEL') {
       if (channel.name == null) {
         res.status(400).send('Channel name required')
         return;
