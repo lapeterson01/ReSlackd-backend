@@ -84,7 +84,14 @@ module.exports = app => {
   });
   
   app.get('/api/channels', requireLogin, (req, res) => {
-    let channelsQuery = `SELECT * from channels WHERE type = 'channel'`;
+    let channelsQuery = 
+      `SELECT *
+      FROM users as u
+      INNER JOIN users2channels as uc
+        ON u.uID = uc.uID
+      INNER JOIN channels as c
+        ON uc.cID = c.cID
+      WHERE c.type = 'channel'`;
     
     pool.query(channelsQuery, (err, results, fields) => {
       if (err) throw err;
