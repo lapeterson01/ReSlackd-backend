@@ -1,12 +1,5 @@
 const mysql = require('mysql');
-const credentials = require('../sql/sql-credentials');
-
-const pool = mysql.createPool({
-    connectionLimit : 10,
-    host            : 'localhost',
-    user            : credentials.username,
-    password        : credentials.password,
-    database        : 'reslackd'
-})
+require('dotenv').config();
+const pool = mysql.createPool(process.env.CLEARDB_DATABASE_URL)
 
 module.exports = pool;
