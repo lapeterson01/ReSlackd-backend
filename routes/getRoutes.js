@@ -4,23 +4,21 @@ const pool = require('../db/pool');
 module.exports = app => {
   app.get('/api/user/channels', requireLogin, (req, res) => {
     //provide list of channels for logged in user
-    let uID = req.user.uID;
+    let uID = pool.escape(req.user.uID);
     //parse query string for search params. convert both search and name-to-be-searched to lowercase.
     let search = '';
-    if (req.query.search) search = req.query.search.toLowerCase();
+    if (req.query.search) search = pool.escape(`%${req.query.search}%`).toLowerCase();
   
     //perform different queries for channels and dms. channels query returns channel name. 
   
     let channelsQuery = `SELECT channels.cID, channels.name, channels.type FROM channels JOIN users2channels ON users2channels.cID = channels.cID JOIN users ON users2channels.uID = users.uID WHERE users.uID = ${uID} AND channels.type = 'channel'`;
 
-    //no need to use node mysql's escape method for search params as they will be parsed as strings.
-
-    if (search) channelsQuery += ` AND LOWER(channels.name) LIKE '%${search}%'`
+    if (search) channelsQuery += ` AND LOWER(channels.name) LIKE ${search}`
 
     let dmsQuery =`SELECT channels.cID, users.name, channels.type FROM channels JOIN users2channels ON users2channels.cID = channels.cID JOIN users ON users2channels.uID = users.uID 
     WHERE channels.cID IN (SELECT channels.cID FROM channels JOIN users2channels ON users2channels.cID = channels.cID JOIN users ON users2channels.uID = users.uID WHERE users.uID = ${uID} AND channels.type = 'dm') AND users.uID <> ${uID}`;
 
-    if (search) dmsQuery += ` AND LOWER(users.name) LIKE '%${search}%'`
+    if (search) dmsQuery += ` AND LOWER(users.name) LIKE ${search}`
 
     let bothQuery = `${channelsQuery} UNION ${dmsQuery}`;
 
