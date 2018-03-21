@@ -64,3 +64,4 @@ db/pool.js
 config/dev.js
 sql
 .vscode
+.env

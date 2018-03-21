@@ -3,7 +3,7 @@ const passport = require('passport');
 const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const socket = require('socket.io');
-const keys = require('./config/dev');
+const keys = require('./config/keys');
 require('./services/passport');
 
 const app = express();
