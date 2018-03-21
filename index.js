@@ -4,10 +4,12 @@ const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const socket = require('socket.io');
 const keys = require('./config/keys');
+const cors = require('cors');
 require('./services/passport');
 
 const app = express();
 
+app.use(cors);
 app.use(bodyParser.json());
 app.use(
     cookieSession({
