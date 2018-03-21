@@ -9,7 +9,7 @@ require('./services/passport');
 
 const app = express();
 
-app.use(cors);
+app.use(cors());
 app.use(bodyParser.json());
 app.use(
     cookieSession({
