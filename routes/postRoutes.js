@@ -71,13 +71,47 @@ module.exports = app => {
       joinedAt: currentTime.getTime(),
       active: true
     }
-    for (let i = 0; i < user.uID.length; i++) {
-      const messageValues = [user.uID[i], user.cID, user.joinedAt, user.active];
-      pool.query('INSERT INTO users2channels (uID, cID, joinedAt, active) VALUES (?, ?, ?, ?)', messageValues, (err, results, fields) => {
-        if (err) throw err;
-      })
+    let userIDs = 'uID = ?';
+    let messageValues = [user.cID, user.uID[0]]
+    for (let i = 1; i < user.uID.length; i++) {
+      userIDs = userIDs.concat(' OR uID = ?')
+      messageValues.push(user.uID[i]);
     }
-    res.send(user);
+    let selectQuery = `SELECT * FROM users2channels WHERE (cID = ?) AND (${userIDs})`;
+    pool.query(selectQuery, messageValues, (err, existingUser, fields) => {
+      if (err) throw err;
+      if (existingUser.length > 0) {
+        res.status(400).send('Cannot add users to channel they are already in.');
+        return;
+      } else {
+        let insertQuery = 'INSERT INTO users2channels (uID, cID, joinedAt, active) VALUES (?, ?, ?, ?)';
+        let insertMessageValues = [user.uID[0], user.cID, user.joinedAt, user.active]
+        for (let i = 1; i < user.uID.length; i++) {
+          insertQuery = insertQuery.concat(', (?, ?, ?, ?)');
+          insertMessageValues.push(user.uID[i], user.cID, user.joinedAt, user.active);
+        }
+        pool.query(insertQuery, insertMessageValues, (err, results, fields) => {
+          if (err) throw err;
+          res.send(user);
+        })
+      }
+    })
+    // for (let i = 0; i < user.uID.length; i++) {
+    //   pool.query('SELECT * FROM users2channels WHERE uID = ? AND cID = ?', [user.uID[i], user.cID], (err, existingUser, fields) => {
+    //     if (err) throw err;
+    //     if (existingUser.length > 0) {
+    //       res.status(400).send('User is already in channel.');
+    //       return;
+    //     } else {
+    //       userAdded = true;
+    //       const messageValues = [user.uID[i], user.cID, user.joinedAt, user.active];
+    //       pool.query('INSERT INTO users2channels (uID, cID, joinedAt, active) VALUES (?, ?, ?, ?)', messageValues, (err, results, fields) => {
+    //         if (err) throw err;
+    //       })
+    //     }
+    //   })
+    // }
+    // res.send(user);
   });
 
 // Create channel or DM
