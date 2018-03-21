@@ -7,6 +7,10 @@ module.exports = app => {
 
 // Add a message to a channel
   app.post('/api/channels/:channelId', requireLogin, async (req, res) => {
+    if (req.body.text == '') {
+      res.status(400).send('You must fill out message field');
+      return;
+    }
     const currentTime = new Date();
     const post = {
       cID: req.params.channelId,
