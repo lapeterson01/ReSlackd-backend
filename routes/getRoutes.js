@@ -7,6 +7,8 @@ module.exports = app => {
     let uID = pool.escape(req.user.uID);
     //parse query string for search params. convert both search and name-to-be-searched to lowercase.
     let search = '';
+    let type = '';
+    if (req.query.type) type = req.query.type.toLowerCase();
     if (req.query.search) search = pool.escape(`%${req.query.search}%`).toLowerCase();
   
     //perform different queries for channels and dms. channels query returns channel name. 
@@ -24,7 +26,8 @@ module.exports = app => {
 
     let finalQuery = '';
 
-    switch (req.query.type) {
+    
+    switch (type) {
       case undefined: {
         finalQuery = bothQuery;
         break;
