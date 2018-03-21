@@ -28,7 +28,7 @@ module.exports = app => {
 
     
     switch (type) {
-      case undefined: {
+      case '': {
         finalQuery = bothQuery;
         break;
       }
