@@ -12,7 +12,7 @@ const dummyUser = {
 module.exports = (req, res, next) => {
   
   //add dummy user to request so we can test get and post routes. comment out once testing is over
-  if (!req.user) req.user = dummyUser;
+  // if (!req.user) req.user = dummyUser;
   
   if (!req.user) {
     return res.status(401).send({ error: 'You must log in!' });

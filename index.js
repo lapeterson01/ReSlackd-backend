@@ -4,11 +4,13 @@ const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const socket = require('socket.io');
 const keys = require('./config/keys');
+const cors = require('cors');
 require('./services/passport');
 const pool = require('./db/pool');
 
 const PORT = process.env.PORT || 8080;
 const app = express();
+app.use(cors());
 
 const server = app.listen(PORT, () => {
   console.log('server is running on port 8080')
