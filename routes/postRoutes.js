@@ -124,9 +124,16 @@ module.exports = app => {
     }
     pool.query('SELECT * FROM channels WHERE name = ?', [channel.name], (err, existingChannel, fields) => {
       if (err) throw err;
-      if (existingChannel.length > 0) {
-        res.status(400).send(`Duplicate ${channel.type}`);
-        return;
+      if (channel.type == 'channel') {
+        if (existingChannel.length > 0) {
+          res.status(400).send(`Duplicate ${channel.type}`);
+          return;
+        }
+      } else {
+        if (existingChannel.length > 0) {
+          res.send(channel)
+          return;
+        }
       }
       let messageValues = [channel.name, channel.purpose, channel.createdAt, channel.type];
       pool.query('INSERT INTO channels (name, purpose, createdAt, type) VALUES (?, ?, ?, ?)', messageValues, (err, results, fields) => {

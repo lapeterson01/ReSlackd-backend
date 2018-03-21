@@ -66,5 +66,4 @@ sql
 .vscode
 .env
 
-/config
-.env.production
+.env
