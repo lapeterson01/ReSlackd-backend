@@ -26,8 +26,12 @@ module.exports = app => {
     });
   });
 
-// Remove currently logged in user(s) from a channel
+// Remove currently logged in user from a channel
   app.put('/api/user/channels', requireLogin, async (req, res) => {
+    if (req.body.channel == "" || !req.body.channel) {
+      res.status(400).send('You must select a channel.');
+      return;
+    }
     const currentTime = new Date();
     const user = {
       uID: req.user.uID,
@@ -36,9 +40,17 @@ module.exports = app => {
       active: true
     }
     const messageValues = [user.uID, user.cID];
-    pool.query('DELETE FROM users2channels WHERE uID = ? AND cID = ?', messageValues, (err, results, fields) => {
+    pool.query('SELECT * FROM users2channels WHERE uID = ? AND cID = ?', messageValues, (err, existingUser, fields) => {
       if (err) throw err;
-      res.send(user);
+      if (existingUser.length == 0) {
+        res.status(404).send('You are not currently a member of selected channel.');
+        return;
+      } else {
+        pool.query('DELETE FROM users2channels WHERE uID = ? AND cID = ?', messageValues, (err, results, fields) => {
+          if (err) throw err;
+          res.send(user);
+        })
+      }
     })
   });
 
