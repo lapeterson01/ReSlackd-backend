@@ -8,6 +8,7 @@ const cors = require('cors');
 require('./services/passport');
 
 const app = express();
+app.use(express.session())
 
 app.use(cors());
 app.use(bodyParser.json());
