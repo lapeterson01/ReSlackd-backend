@@ -27,7 +27,7 @@ passport.use(
                 if (err) throw err;
                 const time = new Date();
                 if (existingUser.length > 0) {
-                    sql.query('UPDATE users SET lastLoginAt = ? WHERE uID = ?', [time.getTime(), existingUser[0].uID], (err, results, fields) => {
+                    sql.query('UPDATE users SET lastLoginAt = ?, lastActiveAt = ? WHERE uID = ?', [time.getTime(), time.getTime(), existingUser[0].uID], (err, results, fields) => {
                         if (err) throw err;
                         done(null, profile);
                     })

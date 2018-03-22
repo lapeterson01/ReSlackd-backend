@@ -7,7 +7,7 @@ module.exports = app => {
     let uID = pool.escape(req.user.uID);
     //parse query string for search params. convert both search and name-to-be-searched to lowercase.
     let search = '';
-    let type = '';
+    let type;
     if (req.query.type) type = req.query.type.toLowerCase();
     if (req.query.search) search = pool.escape(`%${req.query.search}%`).toLowerCase();
   
@@ -59,15 +59,57 @@ module.exports = app => {
     //If there is a page in the request, subtract 1 (page 1 is offset by 0 pages, and so on).
     //Multiply page offset by 20 because 20 results per page.
     let offset = req.query.page ? (parseInt(req.query.page) - 1) * 20 : 0;
+    let type;
+    if (req.query.type) type = req.query.type.toLowerCase();
 
     let messagesQuery = 'SELECT users.name, users.uID, messages.text, messages.createdAt as timestamp, users.imageURL FROM messages join users on messages.uID = users.uID join channels on channels.cID = messages.cID WHERE channels.cID = ? ORDER BY messages.createdAt DESC  LIMIT 20 OFFSET ?';
+    let usersQuery = 'SELECT u.name as user, u.uID, u.imageURL, c.name as channel FROM users as u JOIN users2channels as uc ON u.uID = uc.uID JOIN channels as c ON uc.cID = c.cID WHERE c.cID = ?';
 
-    pool.query(messagesQuery, [channelId, offset], (err, results, fields) => {
-      if (err) throw err;
-      res.send(results); 
-    })
+    let objectToReturn = {};
 
+    switch (type) {
+      case undefined:
+        objectToReturn.messages = [];
+        objectToReturn.users = [];
+        break;
+      case 'messages':
+        objectToReturn.messages = [];
+        break;
+      case 'users':
+        objectToReturn.users = [];
+        break;
+      default:
+        return res.status(400).send("If a type parameter is provided, its value must be 'channel' or 'dm'.")
+    }
     
+    function buildReturnObject() {
+      return new Promise((resolve, reject) => {
+        if (type == 'messages') {
+          pool.query(messagesQuery, [channelId, offset], (err, results, fields) => {
+            if (err) throw err;
+            resolve(results);
+          });
+        }
+        if (type == 'users') {
+          pool.query(usersQuery, [channelId], (err, results, fields) => {
+            if (err) throw err;
+            resolve(results);
+          });
+        }
+      })
+    }
+    async function main() {
+      if (objectToReturn.messages) {
+        type = 'messages';
+        objectToReturn.messages = await buildReturnObject();
+      }
+      if (objectToReturn.users) {
+        type = 'users';
+        objectToReturn.users = await buildReturnObject();
+      }
+      res.send(objectToReturn);
+    }
+    main();
   });
 
 
@@ -85,13 +127,7 @@ module.exports = app => {
   
   app.get('/api/channels', requireLogin, (req, res) => {
     let channelsQuery = 
-      `SELECT *
-      FROM users as u
-      INNER JOIN users2channels as uc
-        ON u.uID = uc.uID
-      INNER JOIN channels as c
-        ON uc.cID = c.cID
-      WHERE c.type = 'channel'`;
+      `SELECT * FROM channels WHERE type = 'channel'`;
     
     pool.query(channelsQuery, (err, results, fields) => {
       if (err) throw err;

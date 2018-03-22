@@ -11,6 +11,9 @@ module.exports = app => {
       res.status(400).send('You must fill out message field');
       return;
     }
+    // FIXME: This is commented because we are using this query with socket.io (index.js)
+    // Delete when we are sure is no longer needed. -JR
+
     // const currentTime = new Date();
     // const post = {
     //   cID: req.params.channelId,
