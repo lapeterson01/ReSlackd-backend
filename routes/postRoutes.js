@@ -19,11 +19,15 @@ module.exports = app => {
       createdAt: currentTime.getTime(),
       enabled: true
     }
-    let messageValues = [post.text, post.createdAt, post.uID, post.cID, post.enabled];
-    pool.query('INSERT INTO messages (text, createdAt, uID, cID, enabled) VALUES (?, ?, ?, ?, ?)', messageValues, (err, results, fields) => {
+    const time = new Date();
+    pool.query('UPDATE users SET lastActiveAt = ? WHERE uID = ?', [time.getTime(), post.uID], (err, results, fields) => {
       if (err) throw err;
-      res.send(post);
-    });
+      let messageValues = [post.text, post.createdAt, post.uID, post.cID, post.enabled];
+      pool.query('INSERT INTO messages (text, createdAt, uID, cID, enabled) VALUES (?, ?, ?, ?, ?)', messageValues, (err, results, fields) => {
+        if (err) throw err;
+        res.send(post);
+      });
+    })
   });
 
 // Remove currently logged in user from a channel
