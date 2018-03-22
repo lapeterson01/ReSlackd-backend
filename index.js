@@ -24,16 +24,17 @@ require('./routes/authRoutes')(app);
 require('./routes/getRoutes')(app);
 require('./routes/postRoutes')(app);
 
+//code that should redirect requests to client in production
 if (process.env.NODE_ENV === 'production') {
     // Express will serve up production assets
     // like our main.js file, or main.css file!
-    app.use(express.static('https://reslackd-frontend.herokuapp.com/client/build'));
+    app.use(express.static('client/build'));
   
     // Express will serve up the index.html file
     // if it doesn't recognize the route
     const path = require('path');
     app.get('*', (req, res) => {
-      res.redirect('https://reslackd-frontend.herokuapp.com/');
+      res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
     });
   }
 
