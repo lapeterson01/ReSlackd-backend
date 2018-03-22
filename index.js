@@ -46,8 +46,6 @@ if (process.env.NODE_ENV === 'production') {
   }
 
 io.on('connection', (socket) => {
-  console.log("client connected with id " + socket.id)
-
 
   //Listens for a new chat message
   socket.on('chat message', (message) => {
@@ -55,7 +53,6 @@ io.on('connection', (socket) => {
     //Send message to those connected in the room
     io.sockets.in(message.cID).emit('receive message', message);
 
-    console.log('new message: ', message)
     message.uID = Number(message.uID);
     let messageValues = [message.text, message.timestamp, message.uID, message.cID, message.enabled];
     pool.query('INSERT INTO messages (text, createdAt, uID, cID, enabled) VALUES (?, ?, ?, ?, ?)', messageValues, (err, result) => {
@@ -68,18 +65,15 @@ io.on('connection', (socket) => {
 
   
   socket.on('room', (room) => {
-    console.log('Enter room:', room)
     socket.join(room.room);
   });
 
   socket.on('leave room', (room) => {
-    console.log('Leaving room... :(', room)
     socket.leave(room.room);
   });
 
 
   socket.on('disconnect', () => {
-    console.log("deleted socket:" + socket.id);
   });
 
 });

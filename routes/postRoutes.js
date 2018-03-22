@@ -11,22 +11,6 @@ module.exports = app => {
       res.status(400).send('You must fill out message field');
       return;
     }
-    // FIXME: This is commented because we are using this query with socket.io (index.js)
-    // Delete when we are sure is no longer needed. -JR
-
-    // const currentTime = new Date();
-    // const post = {
-    //   cID: req.params.channelId,
-    //   uID: req.user.uID,
-    //   text: req.body.text,
-    //   createdAt: currentTime.getTime(),
-    //   enabled: true
-    // }
-    // let messageValues = [post.text, post.createdAt, post.uID, post.cID, post.enabled];
-    // pool.query('INSERT INTO messages (text, createdAt, uID, cID, enabled) VALUES (?, ?, ?, ?, ?)', messageValues, (err, results, fields) => {
-    //   if (err) throw err;
-    //   res.send(post);
-    // });
   });
 
 // Remove currently logged in user from a channel
