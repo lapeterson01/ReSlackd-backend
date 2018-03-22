@@ -1,5 +1,6 @@
 const passport = require('passport');
 const pool = require('../db/pool');
+const requireLogin = require('../middlewares/requireLogin');
 
 module.exports = app => {
     app.get(
@@ -21,7 +22,7 @@ module.exports = app => {
         res.send(req.user);
     });
 
-    app.get('/api/logout', (req, res) => {
+    app.get('/api/logout', requireLogin, (req, res) => {
         const currentTime = new Date();
         pool.query('UPDATE users SET lastActiveAt = ? WHERE uID = ?', [currentTime.getTime(), req.user.uID], (err, results, fields) => {
             if (err) throw err;
