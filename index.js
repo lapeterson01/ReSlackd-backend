@@ -45,11 +45,6 @@ if (process.env.NODE_ENV === 'production') {
     });
   }
 
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-    console.log('server is running on port 8080')
-});
-
 io.on('connection', (socket) => {
   console.log("client connected with id " + socket.id)
 
