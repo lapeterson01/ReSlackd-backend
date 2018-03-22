@@ -1,6 +1,7 @@
 # ReSlackd - Backend
 
-Heyyo! [**ReSlackd (Slack clone)**](https://github.com/lapeterson01/ReSlackd-backend) is built with [**React**](https://facebook.github.io/react/), [**Node**](https://nodejs.org), [**Express**](http://expressjs.com/) and [**Socket.io**](http://socket.io/). Demo is available [**here**](https://chat-server-heroku.herokuapp.com/).
+Heyyo! [**ReSlackd (Slack clone)**](https://github.com/lapeterson01/ReSlackd-backend) is built with [**React**](https://facebook.github.io/react/), [**Node**](https://nodejs.org), [**Express**](http://expressjs.com/) and [**Socket.io**](http://socket.io/). 
+Demo is available [**here**](https://reslackd.herokuapp.com/).
 
 ## Installation and Usage
 
